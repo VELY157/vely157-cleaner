@@ -2,11 +2,12 @@ using System.Diagnostics;
 
 namespace VelyCleanerMac.Core;
 
-public sealed class CleanItem(string name, string description, bool defaultOn, Func<IEnumerable<string>> paths, bool contentsOnly = true)
+public sealed class CleanItem(string name, string description, bool defaultOn, Func<IEnumerable<string>> paths, bool contentsOnly = true, bool needsFullDiskAccess = false)
 {
     public string Name { get; } = name;
     public string Description { get; } = description;
     public bool DefaultOn { get; } = defaultOn;
+    public bool NeedsFullDiskAccess { get; } = needsFullDiskAccess;
 
     // Rutas a limpiar. contentsOnly = borra lo de adentro pero deja la carpeta.
     public IEnumerable<string> Paths() => paths();
@@ -32,13 +33,19 @@ public static class MacCleaner
         foreach (var b in new[] { "Google/Chrome", "BraveSoftware/Brave-Browser", "Microsoft Edge", "com.operasoftware.Opera" })
         {
             yield return Path.Combine(Lib, "Caches", b);
-            var profiles = Path.Combine(Lib, "Application Support", b);
-            if (Directory.Exists(profiles))
-                foreach (var prof in SafeDirs(profiles))
+            var appSupport = Path.Combine(Lib, "Application Support", b);
+            // Cachés de GPU que viven sueltas en la carpeta del navegador, no por perfil.
+            foreach (var shared in new[] { "GrShaderCache", "GraphiteDawnCache", "ShaderCache", "GPUPersistentCache" })
+                yield return Path.Combine(appSupport, shared);
+            if (Directory.Exists(appSupport))
+                foreach (var prof in SafeDirs(appSupport))
                 {
                     yield return Path.Combine(prof, "Cache");
                     yield return Path.Combine(prof, "Code Cache");
                     yield return Path.Combine(prof, "GPUCache");
+                    // Chrome/Brave movieron la caché de apps web (Service Workers) acá.
+                    yield return Path.Combine(prof, "Service Worker", "CacheStorage");
+                    yield return Path.Combine(prof, "Service Worker", "ScriptCache");
                 }
         }
         var ff = Path.Combine(Lib, "Caches", "Firefox", "Profiles");
@@ -59,9 +66,33 @@ public static class MacCleaner
             () => new[] { "Cache", "Code Cache", "GPUCache" }.Select(d => Path.Combine(Lib, "Application Support", "discord", d))),
         new("Descargas incompletas de la App Store", "Restos de descargas de actualizaciones.", false,
             () => One(Path.Combine(Lib, "Caches", "com.apple.appstore"))),
+        new("Caché de Xcode y Simulador de iOS", "DerivedData y cachés del Simulador. Se puede volver a generar al compilar.", true,
+            () => [Path.Combine(Lib, "Developer", "Xcode", "DerivedData"), Path.Combine(Lib, "Developer", "CoreSimulator", "Caches")]),
+        new("Adjuntos descargados de Mail", "Mail los vuelve a bajar si los necesitás. No borra los mensajes.", false,
+            () => One(Path.Combine(Lib, "Containers", "com.apple.mail", "Data", "Library", "Mail Downloads")),
+            needsFullDiskAccess: true),
         new("Papelera", "Vacía la Papelera (no se puede recuperar).", false,
-            () => One(Path.Combine(Home, ".Trash")), contentsOnly: true),
+            () => One(Path.Combine(Home, ".Trash")), contentsOnly: true, needsFullDiskAccess: true),
     ];
+
+    // Sonda liviana: ~/.Trash está protegido por macOS (TCC) y solo se puede leer
+    // con "Acceso total al disco" activado para esta app.
+    public static bool HasFullDiskAccess()
+    {
+        try
+        {
+            _ = Directory.EnumerateFileSystemEntries(Path.Combine(Home, ".Trash")).Any();
+            return true;
+        }
+        catch (UnauthorizedAccessException) { return false; }
+        catch (Exception e) when (e is IOException) { return true; }
+    }
+
+    public static void OpenFullDiskAccessSettings()
+    {
+        try { Process.Start("open", "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"); }
+        catch (Exception e) when (e is System.ComponentModel.Win32Exception or IOException) { }
+    }
 
     public static long SizeOf(string path, bool contentsOnly)
     {

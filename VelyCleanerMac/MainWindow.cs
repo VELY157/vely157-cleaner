@@ -114,12 +114,69 @@ public sealed class MainWindow : Window
         var countdown = new TextBlock { Foreground = Muted, FontSize = 13 };
         var updateBtn = SecondaryButton("Buscar actualización", 210);
         var changeKey = SecondaryButton("Cambiar key", 210);
+        var perfText = new TextBlock { Text = "Cargando RAM y batería…", Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap, Width = 210 };
+        var freeRamBtn = SecondaryButton("Liberar RAM inactiva", 210);
+        var largeFilesBtn = SecondaryButton("Archivos grandes…", 210);
+        var duplicatesBtn = SecondaryButton("Archivos duplicados…", 210);
+        var uninstallBtn = SecondaryButton("Desinstalar apps…", 210);
         var menu = new Border
         {
             Background = Card, BorderBrush = Blue, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10),
             Padding = new Thickness(10), IsVisible = false, HorizontalAlignment = HorizontalAlignment.Right,
             VerticalAlignment = VerticalAlignment.Top, Margin = new Thickness(0, 70, 22, 0), ZIndex = 10,
-            Child = new StackPanel { Spacing = 8, Children = { updateBtn, changeKey } },
+            Child = new StackPanel
+            {
+                Spacing = 8,
+                Children =
+                {
+                    updateBtn, changeKey,
+                    new Border { BorderBrush = Line, BorderThickness = new Thickness(0, 1, 0, 0), Margin = new Thickness(0, 2) },
+                    perfText, freeRamBtn, largeFilesBtn, duplicatesBtn, uninstallBtn,
+                },
+            },
+        };
+
+        void RefreshPerf()
+        {
+            _ = Task.Run(() =>
+            {
+                var mem = Performance.GetMemoryInfo();
+                var bat = Performance.GetBatteryInfo();
+                var text = $"🧠 RAM libre: {MacCleaner.Format(mem.FreeBytes)} de {MacCleaner.Format(mem.TotalBytes)}\n" +
+                           $"🔋 Batería: {bat.Percent}% · {bat.Condition} ({bat.CycleCount} ciclos)";
+                Dispatcher.UIThread.Post(() => perfText.Text = text);
+            });
+        }
+        RefreshPerf();
+        freeRamBtn.Click += (_, _) =>
+        {
+            freeRamBtn.IsEnabled = false;
+            freeRamBtn.Content = "Liberando…";
+            _ = Task.Run(() =>
+            {
+                Performance.FreeInactiveMemory();
+                Dispatcher.UIThread.Post(() =>
+                {
+                    freeRamBtn.IsEnabled = true;
+                    freeRamBtn.Content = "Liberar RAM inactiva";
+                    RefreshPerf();
+                });
+            });
+        };
+        largeFilesBtn.Click += (_, _) =>
+        {
+            menu.IsVisible = false;
+            new LargeFilesWindow().Show();
+        };
+        duplicatesBtn.Click += (_, _) =>
+        {
+            menu.IsVisible = false;
+            new DuplicateFinderWindow().Show();
+        };
+        uninstallBtn.Click += (_, _) =>
+        {
+            menu.IsVisible = false;
+            new AppUninstallerWindow().Show();
         };
         var gear = SecondaryButton("⚙", 46);
         gear.FontSize = 20;
@@ -144,7 +201,7 @@ public sealed class MainWindow : Window
             {
                 Children =
                 {
-                    new TextBlock { Text = item.Name, Foreground = Text, FontWeight = FontWeight.SemiBold },
+                    new TextBlock { Text = item.NeedsFullDiskAccess ? item.Name + "  🔒" : item.Name, Foreground = Text, FontWeight = FontWeight.SemiBold },
                     new TextBlock { Text = item.Description, Foreground = Muted, FontSize = 11, TextWrapping = TextWrapping.Wrap, MaxWidth = 330 },
                 },
             } };
@@ -178,6 +235,34 @@ public sealed class MainWindow : Window
         side.Children.Add(bottom);
         side.Children.Add(new Panel { Children = { ring } , VerticalAlignment = VerticalAlignment.Center });
 
+        // Aviso de "Acceso total al disco": sin esto macOS no deja vaciar la Papelera
+        // ni tocar Mail, por más que la app lo pida.
+        var fdaText = new TextBlock
+        {
+            Text = "🔒 Para vaciar la Papelera y limpiar Mail, dale \"Acceso total al disco\" a VELY157 Cleaner.",
+            Foreground = Text, FontSize = 12, TextWrapping = TextWrapping.Wrap,
+        };
+        var fdaOpen = SecondaryButton("Abrir Configuración", 170);
+        fdaOpen.Height = 34;
+        var fdaRecheck = SecondaryButton("Ya lo activé, revisar", 170);
+        fdaRecheck.Height = 34;
+        var fdaBanner = new Border
+        {
+            Background = Brush("#3A2A12"), BorderBrush = Brush("#D9A441"), BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(9), Padding = new Thickness(12, 10), Margin = new Thickness(0, 0, 0, 10),
+            IsVisible = !MacCleaner.HasFullDiskAccess(),
+            Child = new StackPanel
+            {
+                Spacing = 8,
+                Children =
+                {
+                    fdaText,
+                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, Children = { fdaOpen, fdaRecheck } },
+                },
+            },
+        };
+        fdaOpen.Click += (_, _) => MacCleaner.OpenFullDiskAccessSettings();
+
         var listCard = new Border
         {
             Background = Card, CornerRadius = new CornerRadius(12), BorderBrush = Line, BorderThickness = new Thickness(1), Padding = new Thickness(10),
@@ -186,6 +271,7 @@ public sealed class MainWindow : Window
                 Children =
                 {
                     Docked(new TextBlock { Text = "¿Qué limpiar?", Foreground = Text, FontWeight = FontWeight.SemiBold, FontSize = 15, Margin = new Thickness(4, 2, 0, 10) }, Dock.Top),
+                    Docked(fdaBanner, Dock.Top),
                     new ScrollViewer { Content = list },
                 },
             },
@@ -232,6 +318,12 @@ public sealed class MainWindow : Window
             Estimate();
             analyze.IsEnabled = clean.IsEnabled = true;
         }
+
+        fdaRecheck.Click += async (_, _) =>
+        {
+            fdaBanner.IsVisible = !MacCleaner.HasFullDiskAccess();
+            if (!fdaBanner.IsVisible) await Analyze();
+        };
 
         async Task Clean()
         {
