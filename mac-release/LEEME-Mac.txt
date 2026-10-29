@@ -25,6 +25,6 @@ IMPORTANTE
 - Sin una key válida el programa no limpia nada.
 - La key funciona en UN solo equipo y por los días que compraste.
 - Necesitas internet para activarla; después funciona hasta 3 días sin internet.
-- Para actualizar: botón ⚙ → "Buscar actualización".
+- Para actualizar: en la barra lateral, "Configuración" → "Buscar actualización".
 
 Vely Media LLC · velymediallc.com
