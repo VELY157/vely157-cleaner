@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>VELY157 Cleaner</AssemblyName>
+    <RootNamespace>VelyCleaner</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <ApplicationIcon>..\Shared\icon.ico</ApplicationIcon>
+    <Version>1.0.2</Version>
+    <Company>Vely Media LLC</Company>
+    <Product>VELY157 Cleaner</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\Ui.cs" Link="Ui.cs" />
+    <Using Include="VelyUi" />
+  </ItemGroup>
+
+</Project>

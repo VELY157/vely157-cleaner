@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>VELY157 · Licencias</title>
+<style>
+  :root {
+    --bg:#0b0f14; --card:#121821; --line:#222c38; --text:#e6edf3; --muted:#8b949e;
+    --accent:#22c55e; --warn:#f59e0b; --bad:#f87171; --info:#60a5fa; --off:#6b7280;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; font-size:14px; }
+  header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 20px; border-bottom:1px solid var(--line); background:#0d131a; position:sticky; top:0; z-index:5; }
+  header h1 { margin:0; font-size:18px; letter-spacing:.5px; }
+  header h1 span { color:var(--accent); }
+  main { max-width:1280px; margin:0 auto; padding:20px 16px 60px; }
+  .btn { border:1px solid var(--line); background:#18212c; color:var(--text); padding:7px 12px; border-radius:8px; cursor:pointer; font-size:13px; }
+  .btn:hover { border-color:#3a4757; }
+  .btn.primary { background:var(--accent); border-color:var(--accent); color:#05210f; font-weight:700; }
+  .btn.danger { color:var(--bad); }
+  .btn.sm { padding:4px 8px; font-size:12px; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:20px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px; }
+  .stat .n { font-size:28px; font-weight:700; line-height:1.1; font-variant-numeric:tabular-nums; }
+  .stat .l { color:var(--muted); font-size:12px; margin-top:4px; text-transform:uppercase; letter-spacing:.6px; }
+  .stat.activa .n { color:var(--accent); } .stat.sin_activar .n { color:var(--info); }
+  .stat.vencida .n { color:var(--warn); } .stat.cancelada .n { color:var(--bad); }
+
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:20px; }
+  .card h2 { margin:0 0 14px; font-size:15px; }
+  .grid { display:grid; grid-template-columns:2fr 1.4fr 2fr .7fr auto; gap:12px; align-items:end; }
+  @media (max-width:860px) { .grid { grid-template-columns:1fr; } }
+  label { display:block; font-size:12px; color:var(--muted); margin-bottom:5px; }
+  input { width:100%; padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:#0d131a; color:var(--text); font-size:14px; }
+  input:focus { outline:2px solid var(--accent); outline-offset:1px; }
+  .chips { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+  .chip { padding:3px 9px; border-radius:999px; border:1px solid var(--line); background:#0d131a; color:var(--muted); cursor:pointer; font-size:12px; }
+  .chip:hover { color:var(--text); border-color:var(--accent); }
+
+  .created { display:none; margin-top:14px; padding:12px; border-radius:8px; background:#0f2417; border:1px solid #1f5131; }
+  .created .k { font-family:Consolas,monospace; font-size:15px; display:flex; align-items:center; gap:8px; margin:4px 0; }
+
+  .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:12px; flex-wrap:wrap; }
+  .toolbar input { max-width:320px; }
+  .filters { display:flex; gap:6px; flex-wrap:wrap; }
+  .filters .chip.on { color:#05210f; background:var(--accent); border-color:var(--accent); }
+
+  .tablewrap { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; min-width:980px; }
+  th, td { text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.5px; }
+  td.key { font-family:Consolas,monospace; white-space:nowrap; }
+  td .sub { color:var(--muted); font-size:12px; }
+  .badge { display:inline-block; padding:2px 9px; border-radius:999px; font-size:12px; font-weight:600; }
+  .badge.activa { background:#123821; color:var(--accent); }
+  .badge.sin_activar { background:#13253d; color:var(--info); }
+  .badge.vencida { background:#3a2a0c; color:var(--warn); }
+  .badge.cancelada { background:#3b1717; color:var(--bad); }
+  .actions { display:flex; gap:5px; flex-wrap:wrap; }
+  .empty { text-align:center; color:var(--muted); padding:40px 0; }
+
+  details summary { cursor:pointer; color:var(--muted); }
+  .pw { display:grid; grid-template-columns:1fr 1fr auto; gap:10px; margin-top:12px; align-items:end; max-width:640px; }
+  @media (max-width:640px) { .pw { grid-template-columns:1fr; } }
+
+  #toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(80px); background:#18212c; border:1px solid var(--line); padding:10px 16px; border-radius:10px; transition:transform .25s; z-index:10; }
+  #toast.show { transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<header>
+  <h1>VELY<span>157</span> · Licencias</h1>
+  <form method="post" action="/admin/logout"><button class="btn" type="submit">Salir</button></form>
+</header>
+
+<main>
+  <section class="stats" id="stats"></section>
+
+  <section class="card">
+    <h2>Crear key</h2>
+    <form id="create" class="grid" autocomplete="off">
+      <div>
+        <label for="customer">Cliente</label>
+        <input id="customer" required maxlength="80" placeholder="Nombre o WhatsApp del cliente">
+      </div>
+      <div>
+        <label for="days">Días de uso</label>
+        <input id="days" type="number" min="1" max="3650" value="7" required>
+        <div class="chips">
+          <button type="button" class="chip" data-days="1">1</button>
+          <button type="button" class="chip" data-days="7">7</button>
+          <button type="button" class="chip" data-days="15">15</button>
+          <button type="button" class="chip" data-days="30">30</button>
+          <button type="button" class="chip" data-days="90">90</button>
+          <button type="button" class="chip" data-days="365">365</button>
+        </div>
+      </div>
+      <div>
+        <label for="note">Nota (opcional)</label>
+        <input id="note" maxlength="200" placeholder="Ej: pagó $5 por Zelle">
+      </div>
+      <div>
+        <label for="count">Cantidad</label>
+        <input id="count" type="number" min="1" max="50" value="1">
+      </div>
+      <button class="btn primary" type="submit">Generar</button>
+    </form>
+    <div class="created" id="created"></div>
+  </section>
+
+  <section class="card">
+    <div class="toolbar">
+      <input id="search" placeholder="Buscar por key, cliente, PC o nota…">
+      <div class="filters" id="filters">
+        <button class="chip on" data-f="">Todas</button>
+        <button class="chip" data-f="activa">Activas</button>
+        <button class="chip" data-f="sin_activar">Sin activar</button>
+        <button class="chip" data-f="vencida">Vencidas</button>
+        <button class="chip" data-f="cancelada">Canceladas</button>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Key</th><th>Cliente</th><th>Estado</th><th>Tiempo</th><th>PC</th><th>Última conexión</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>Cambiar contraseña del panel</summary>
+      <form id="pw" class="pw" autocomplete="off">
+        <div><label for="pwCurrent">Actual</label><input id="pwCurrent" type="password" autocomplete="current-password" required></div>
+        <div><label for="pwNew">Nueva (mínimo 10)</label><input id="pwNew" type="password" autocomplete="new-password" minlength="10" required></div>
+        <button class="btn primary" type="submit">Guardar</button>
+      </form>
+    </details>
+  </section>
+</main>
+
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const STATUS = { activa:'Activa', sin_activar:'Sin activar', vencida:'Vencida', cancelada:'Cancelada' };
+let all = [], filter = '';
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmt(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleString('es', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function ago(d) {
+  if (!d) return 'Nunca';
+  const m = Math.round((Date.now() - new Date(d)) / 60000);
+  if (m < 1) return 'Ahora';
+  if (m < 60) return `Hace ${m} min`;
+  if (m < 1440) return `Hace ${Math.round(m / 60)} h`;
+  return `Hace ${Math.round(m / 1440)} d`;
+}
+function timeLeft(l) {
+  if (!l.expiresAt) return `${l.durationDays} días<div class="sub">empiezan al activar</div>`;
+  const ms = new Date(l.expiresAt) - Date.now();
+  const sub = `<div class="sub">vence ${fmt(l.expiresAt)}</div>`;
+  if (ms <= 0) return `Vencida${sub}`;
+  const d = Math.floor(ms / 86400000), h = Math.floor(ms % 86400000 / 3600000);
+  return `${d ? d + ' d ' : ''}${h} h${sub}`;
+}
+function toast(msg) {
+  const t = $('#toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+async function api(method, url, body) {
+  const r = await fetch('/admin/api' + url, {
+    method, headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined,
+  });
+  if (r.status === 401) { location.href = '/admin/login'; throw new Error('401'); }
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) { toast(data.message || 'Error'); throw new Error(data.message); }
+  return data;
+}
+function copy(text) {
+  navigator.clipboard.writeText(text).then(() => toast('Copiada: ' + text));
+}
+
+function renderStats() {
+  const c = { activa:0, sin_activar:0, vencida:0, cancelada:0 };
+  all.forEach(l => c[l.status]++);
+  $('#stats').innerHTML =
+    `<div class="stat"><div class="n">${all.length}</div><div class="l">Total keys</div></div>` +
+    Object.keys(c).map(s => `<div class="stat ${s}"><div class="n">${c[s]}</div><div class="l">${STATUS[s]}</div></div>`).join('');
+}
+
+function render() {
+  const q = $('#search').value.trim().toLowerCase();
+  const list = all.filter(l =>
+    (!filter || l.status === filter) &&
+    (!q || [l.key, l.customer, l.note, l.machineName].some(v => (v || '').toLowerCase().includes(q))));
+  if (!list.length) { $('#rows').innerHTML = `<tr><td colspan="7" class="empty">No hay keys${all.length ? ' con ese filtro' : ' todavía. Crea la primera arriba.'}</td></tr>`; return; }
+  $('#rows').innerHTML = list.map(l => `
+    <tr>
+      <td class="key">${esc(l.key)} <button class="btn sm" data-a="copy" data-k="${esc(l.key)}">Copiar</button></td>
+      <td>${esc(l.customer)}${l.note ? `<div class="sub">${esc(l.note)}</div>` : ''}</td>
+      <td><span class="badge ${l.status}">${STATUS[l.status]}</span></td>
+      <td>${timeLeft(l)}</td>
+      <td>${l.boundToPc ? esc(l.machineName || 'PC sin nombre') : '<span class="sub">Ninguna</span>'}</td>
+      <td>${ago(l.lastSeenAt)}${l.lastIp ? `<div class="sub">${esc(l.lastIp)} · ${l.checks} usos</div>` : ''}</td>
+      <td><div class="actions">
+        <button class="btn sm" data-a="extend" data-id="${l.id}">+ Días</button>
+        ${l.boundToPc ? `<button class="btn sm" data-a="reset-pc" data-id="${l.id}">Liberar PC</button>` : ''}
+        ${l.status === 'cancelada'
+          ? `<button class="btn sm" data-a="restore" data-id="${l.id}">Reactivar</button>`
+          : `<button class="btn sm danger" data-a="revoke" data-id="${l.id}">Cancelar</button>`}
+        <button class="btn sm danger" data-a="delete" data-id="${l.id}">Borrar</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+async function load() {
+  all = await api('GET', '/licenses');
+  renderStats(); render();
+}
+
+document.querySelectorAll('[data-days]').forEach(b => b.onclick = () => $('#days').value = b.dataset.days);
+$('#search').oninput = render;
+$('#filters').onclick = e => {
+  const b = e.target.closest('[data-f]'); if (!b) return;
+  filter = b.dataset.f;
+  document.querySelectorAll('#filters .chip').forEach(c => c.classList.toggle('on', c === b));
+  render();
+};
+
+$('#create').onsubmit = async e => {
+  e.preventDefault();
+  const res = await api('POST', '/licenses', {
+    customer: $('#customer').value, days: +$('#days').value, note: $('#note').value, count: +$('#count').value || 1,
+  });
+  const box = $('#created');
+  box.innerHTML = `<div>Keys creadas para <b>${esc($('#customer').value)}</b> (${+$('#days').value} días):</div>` +
+    res.keys.map(k => `<div class="k">${esc(k)} <button class="btn sm" data-a="copy" data-k="${esc(k)}">Copiar</button></div>`).join('') +
+    (res.keys.length > 1 ? `<button class="btn sm" data-a="copy" data-k="${esc(res.keys.join('\n'))}">Copiar todas</button>` : '');
+  box.style.display = 'block';
+  $('#customer').value = ''; $('#note').value = ''; $('#count').value = 1;
+  load();
+};
+
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-a]'); if (!b) return;
+  const a = b.dataset.a, id = b.dataset.id;
+  if (a === 'copy') return copy(b.dataset.k);
+  if (a === 'extend') {
+    const d = prompt('¿Cuántos días agregar?', '7');
+    if (!d) return;
+    await api('POST', `/licenses/${id}/extend`, { days: parseInt(d, 10) });
+    toast('Días agregados');
+  } else if (a === 'reset-pc') {
+    if (!confirm('¿Liberar la PC? El cliente podrá activar la key en otra computadora. Los días no se reinician.')) return;
+    await api('POST', `/licenses/${id}/reset-pc`); toast('PC liberada');
+  } else if (a === 'revoke') {
+    if (!confirm('¿Cancelar esta key? Dejará de funcionar en menos de 3 días (o al instante si el cliente está conectado).')) return;
+    await api('POST', `/licenses/${id}/revoke`); toast('Key cancelada');
+  } else if (a === 'restore') {
+    await api('POST', `/licenses/${id}/restore`); toast('Key reactivada');
+  } else if (a === 'delete') {
+    if (!confirm('¿Borrar la key para siempre?')) return;
+    await api('DELETE', `/licenses/${id}`); toast('Key borrada');
+  }
+  load();
+});
+
+$('#pw').onsubmit = async e => {
+  e.preventDefault();
+  await api('POST', '/password', { current: $('#pwCurrent').value, new: $('#pwNew').value });
+  $('#pw').reset(); toast('Contraseña cambiada');
+};
+
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>

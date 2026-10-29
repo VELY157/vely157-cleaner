@@ -1,0 +1,30 @@
+VELY157 CLEANER PARA MAC
+========================
+
+Limpia la caché de tus apps y navegadores (Safari, Chrome, Brave, Edge,
+Opera, Firefox), los registros viejos, la caché de Discord y, si quieres,
+la Papelera. No borra contraseñas, historial ni archivos personales.
+
+CÓMO INSTALAR
+1. Descarga "VELY157-Cleaner-Mac.zip" y ábrelo (se descomprime solo).
+2. Arrastra "VELY157 Cleaner" a la carpeta Aplicaciones.
+3. La primera vez, macOS dirá que es de un desarrollador no identificado:
+   - Haz clic derecho (o Control + clic) sobre la app → "Abrir" → "Abrir".
+   - Si no aparece la opción: Ajustes del Sistema → Privacidad y seguridad
+     → baja hasta "VELY157 Cleaner" → "Abrir de todas formas".
+4. En Macs con chip Apple (M1, M2, M3…) puede pedir instalar "Rosetta".
+   Acepta: es de Apple y solo se hace una vez.
+
+CÓMO ACTIVAR
+1. Abre VELY157 Cleaner.
+2. Para probarlo, pulsa "Empezar 7 días gratis" (una prueba por Mac).
+3. Si ya compraste una key, pégala (VELY-XXXXX-XXXXX-XXXXX-XXXXX) y pulsa "Activar".
+   Para comprarla, pulsa "Comprar licencia por WhatsApp".
+
+IMPORTANTE
+- Sin una key válida el programa no limpia nada.
+- La key funciona en UN solo equipo y por los días que compraste.
+- Necesitas internet para activarla; después funciona hasta 3 días sin internet.
+- Para actualizar: botón ⚙ → "Buscar actualización".
+
+Vely Media LLC · velymediallc.com
