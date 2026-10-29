@@ -112,14 +112,31 @@ public static class MacCleaner
     {
         try
         {
-            if (item is FileInfo f) { var s = f.Length; f.Delete(); return s; }
+            if (item is FileInfo f) { var s = f.Length; EnsureWritable(f.FullName); f.Delete(); return s; }
             var d = (DirectoryInfo)item;
             if (IsLink(d)) { d.Delete(false); return 0; }
+            EnsureWritable(d.FullName);
             var freed = d.EnumerateFileSystemInfos().ToList().Sum(DeleteInfo);
             try { d.Delete(false); } catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
             return freed;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return 0; }
+    }
+
+    // Algunas herramientas (p. ej. dotslash, usado por React Native DevTools) dejan sus
+    // carpetas de caché en modo solo-lectura (dr-xr-xr-x) para evitar que se modifiquen
+    // los binarios bajados. Sin permiso de escritura no se puede borrar lo de adentro,
+    // así que se lo agregamos antes de intentar.
+    static void EnsureWritable(string path)
+    {
+        if (!OperatingSystem.IsMacOS() && !OperatingSystem.IsLinux()) return;
+        try
+        {
+            var mode = File.GetUnixFileMode(path);
+            var needed = mode | UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+            if (needed != mode) File.SetUnixFileMode(path, needed);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or PlatformNotSupportedException) { }
     }
 
     static bool IsLink(FileSystemInfo i) => i.Attributes.HasFlag(FileAttributes.ReparsePoint);
